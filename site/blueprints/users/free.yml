@@ -1,0 +1,37 @@
+title: Free
+home: /
+permissions:
+  access:
+    panel: false
+
+columns:
+  - width: 1/2
+    fields:
+      vorname:
+        label: Vorname
+        type: text
+        width: 1/2
+      nachname:
+        label: Nachname
+        type: text
+        width: 1/2
+      strasse:
+        label: Straße
+        type: text
+      plz:
+        label: PLZ
+        type: text
+        width: 1/4
+      stadt:
+        label: Ort/Stadt
+        type: text
+        width: 3/4
+      country:
+        label: Country
+        type: text
+
+  - width: 1/2
+    fields:
+      website:
+        label: Website
+        type: url

@@ -1,0 +1,16 @@
+{
+  "name": "schaustellerplatz/templates-folder",
+  "description": "Templates in Ordner ordnen",
+  "license": "MIT",
+  "type": "kirby-plugin",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "Birrwerk",
+      "email": "info@birrwerk.de"
+    }
+  ],
+  "require": {
+    "getkirby/composer-installer": "^1.1"
+  }
+}

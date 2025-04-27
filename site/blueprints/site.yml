@@ -1,0 +1,39 @@
+tabs:
+  dashboard:
+    label: Dashboard
+    icon: dashboard
+    sections:
+      hinweis:
+        type: fields
+        fields:
+          hinweisheadline:
+            label: Hinweis anzeigen
+            type: headline
+          hinweistext:
+            label: Hinweis Text
+            type: text
+            width: 2/4
+          hinweisdatumab:
+            type: date
+            label: Hinweis anzeigen ab
+            display: dd.mm.YYYY
+            width: 1/4
+            min: now - 1 day
+          hinweisdatumbis:
+            type: date
+            label: Hinweis anzeigen bis
+            display: dd.mm.YYYY
+            width: 1/4
+            min: now - 1 day
+  seiten:
+    label: Seiten
+    icon: sitemap
+    columns:
+      - width: 2/2
+          sections:
+            pages:
+              label: Seiten
+              type: pages
+              layout: listed
+              create: default
+

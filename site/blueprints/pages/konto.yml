@@ -1,0 +1,79 @@
+# Each page blueprint must have a title, the title may be different from the file name
+# This default blueprint is used to display a page in the Panel whenever a custom page blueprint is missing.
+title: Konto
+
+# Each page can have an icon that is shown in page listings when no preview image is available.
+icon: 📝
+
+# Custom descriptions of page statuses depending on use case
+# More about page statuses: https://getkirby.com/docs/reference/panel/blueprints/page#statuses
+status:
+  draft: true
+  unlisted:
+    label: Hidden Page
+    text: The page is not listed in the main menu
+  listed:
+    label: Menu Page
+    text: The page is listed in the main menu
+
+# Content area width 2 columns and 3 sections: fields, pages, and files
+# Columns: https://getkirby.com/docs/guide/blueprints/layout#defining-columns
+columns:
+  main:
+    width: 2/3
+    sections:
+      kunden:
+        type: pages
+        template: default
+      left:
+        type: fields
+        fields:
+          pakete:
+            label: Pakete
+            type: structure
+            fields:
+              title:
+                label: Name
+                type: text
+              free:
+                label: 100% kostenlos?
+                type: toggle
+                text:
+                  - "no"
+                  - "yes"
+              preis_monat:
+                label: Preis pro Monat
+                type: text
+              preis_jahr:
+                label: Preis pro Jahr
+                type: text
+              funktionen_free:
+                label: Funktionen
+                type: multiselect
+                options:
+                  type: query
+                  query: page.funktionen.toStructure
+                  text: "{{ item.funktion }}"
+                  value: "{{ item.funktion }}"
+              funktionen_premium:
+                label: Funktionen
+                type: multiselect
+                options:
+                  type: query
+                  query: page.funktionen.toStructure
+                  text: "{{ item.funktion }}"
+                  value: "{{ item.funktion }}"
+  sidebar:
+    width: 1/3
+    sections:
+      right:
+        type: fields
+        fields:
+          funktionen:
+            label: Funktionen
+            type: structure
+            fields:
+              funktion:
+                label: Funktion
+                type: text
+

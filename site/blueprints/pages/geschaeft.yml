@@ -1,0 +1,43 @@
+title: Geschäft
+num: date
+options:
+  changeStatus: true
+create:
+  title:
+    label: Name vom Geschäft
+  redirect: true
+  status: draft
+fields:
+  uuid:
+    label: UUID
+    type: text
+    disabled: true
+  owner:
+    label: Owner
+    type: users
+    help: Der Wert in der Spalte <code>owner</code> muss mit einer User-ID dieser Kirby-Instanz übereinstimmen.
+  status:
+    label: Status
+    type: text
+    disabled: true
+  creation_date:
+    label: Geschäft angelegt am
+    type: date
+    default: now
+    disabled: true
+  typ:
+    label: Typ des Geschäfts
+    type: select
+    options:
+      Automatenwagen: Automatenwagen
+      Fahrgeschäft: Fahrgeschäft
+      Spielgeschäft: Spielgeschäft
+      Imbiss: Imbiss
+      Schießwagen: Schießwagen
+      Süßwarenstand: Süßwarenstand
+      Getränkestand: Getränkestand
+      Laufgeschäft: Laufgeschäft
+      Warenverkaufsstand: Warenverkaufsstand
+      Anderes: Anderes
+
+

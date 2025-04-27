@@ -1,0 +1,28 @@
+name: Geschäfte
+
+sections:
+  geschaefte-drafts:
+    label: Geschäfte drafts
+    type: pages
+    template: geschaeft
+    layout: table
+    status: all
+
+  geschaefte-unlisted:
+    label: Geschäfte unlisted
+    type: pages
+    status: unlisted
+    template: geschaeft
+    layout: table
+
+  geschaefte-listed:
+    label: Geschäfte veröffentlicht
+    type: pages
+    status: listed
+    template: geschaeft
+    layout: table
+    columns:
+      creation_date: true
+        label: Hinzugefügt am
+      typ: true
+      owner: true
