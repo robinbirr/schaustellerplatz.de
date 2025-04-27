@@ -1,8 +1,19 @@
 title: Free
-home: /
+home: /konto
 permissions:
   access:
     panel: false
+  user:
+    update: true
+    delete: false
+  pages:
+    create:
+      - geschaeft
+      - kleinanzeige
+      - jobangebot
+    delete: own
+    update: own
+    publish: false
 
 columns:
   - width: 1/2
@@ -27,7 +38,7 @@ columns:
         type: text
         width: 3/4
       country:
-        label: Country
+        label: Land
         type: text
 
   - width: 1/2
@@ -35,3 +46,24 @@ columns:
       website:
         label: Website
         type: url
+      umkreis_platzangebote:
+        label: Umkreis für Platzangebote
+        type: number
+        default: 100
+        readonly: true
+        suffix: km
+      max_images_per_geschaeft:
+        label: Max. Bilder pro Geschäft
+        type: number
+        default: 3
+        readonly: true
+      account_type:
+        label: Account-Typ
+        type: text
+        default: free
+        readonly: true
+      account_created:
+        label: Erstellt am
+        type: date
+        default: now
+        readonly: true

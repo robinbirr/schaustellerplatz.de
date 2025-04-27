@@ -1,24 +1,44 @@
 title: Premium
-home: /
+home: /konto
 permissions:
   access:
     panel: false
+  user:
+    update: true
+    delete: false
+  pages:
+    create:
+      - geschaeft
+      - kleinanzeige
+      - jobangebot
+    delete: own
+    update: own
+    publish: false
+
 columns:
   - width: 1/2
     fields:
-      street:
-        label: Street
+      vorname:
+        label: Vorname
         type: text
-      zip:
-        label: ZIP
+        width: 1/2
+      nachname:
+        label: Nachname
+        type: text
+        width: 1/2
+      strasse:
+        label: Straße
+        type: text
+      plz:
+        label: PLZ
         type: text
         width: 1/4
-      city:
-        label: City
+      stadt:
+        label: Ort/Stadt
         type: text
         width: 3/4
       country:
-        label: Country
+        label: Land
         type: text
 
   - width: 1/2
@@ -26,3 +46,43 @@ columns:
       website:
         label: Website
         type: url
+      umkreis_platzangebote:
+        label: Umkreis für Platzangebote
+        type: number
+        default: 300
+        readonly: true
+        suffix: km
+      max_images_per_geschaeft:
+        label: Max. Bilder pro Geschäft
+        type: number
+        default: 6
+        readonly: true
+      youtube_embed:
+        label: YouTube-Einbindung
+        type: toggle
+        default: true
+        readonly: true
+        text:
+          - "Nein"
+          - "Ja"
+      account_type:
+        label: Account-Typ
+        type: text
+        default: premium
+        readonly: true
+      subscription_start:
+        label: Abo begonnen am
+        type: date
+        default: now
+        readonly: true
+      subscription_end:
+        label: Abo endet am
+        type: date
+        default: +30 days
+      subscription_type:
+        label: Abo-Typ
+        type: select
+        options:
+          monthly: Monatlich
+          annual: Jährlich
+        default: monthly

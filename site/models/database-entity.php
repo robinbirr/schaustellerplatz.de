@@ -2,10 +2,10 @@
 
 use Kirby\Database\Db;
 use Kirby\Toolkit\Str;
+use Kirby\Uuid\Uuid;
 
 abstract class DatabaseEntityPage extends Kirby\Cms\Page
 {
-
     abstract function tableName(): string;
 
     public function uuidNoPrefix(): string
@@ -46,9 +46,13 @@ abstract class DatabaseEntityPage extends Kirby\Cms\Page
 
     public function writeContent(array $data, string|null $languageCode = null): bool
     {
+        // Prüfen ob ein UUID fehlt und ggf. generieren
+        if (!isset($data['uuid']) && !$this->existsInDatabase()) {
+            $data['uuid'] = Uuid::generate();
+        }
+
         if ($this->existsInDatabase()) {
             unset($data['uuid']);
-
             return $this->updateContent($data);
         } else {
             return $this->insertContent($data);
@@ -97,11 +101,6 @@ abstract class DatabaseEntityPage extends Kirby\Cms\Page
 
         $this->update(['status' => 'listed']);
 
-        // TODO: Implement `num()` methods first to make resorting work.
-//        if ($position !== null) {
-//            $this->resortSiblingsAfterListing($position);
-//        }
-
         return $this;
     }
 
@@ -122,15 +121,27 @@ abstract class DatabaseEntityPage extends Kirby\Cms\Page
 
     private function hasStatus(string $status): bool
     {
-        return $this->content()->data()['status'] === $status;
+        return ($this->content()->data()['status'] ?? '') === $status;
     }
 
     private function insertContent(array $data): bool
     {
-        return $this->queryDb()->insert([
-            'title' => $data['title'],
-            'slug' => Str::slug($data['title']),
-        ]);
+        // Wenn kein Titel gesetzt ist, abbrechen
+        if (!isset($data['title'])) {
+            return false;
+        }
+
+        // Stelle sicher, dass ein Slug generiert wird
+        if (!isset($data['slug'])) {
+            $data['slug'] = Str::slug($data['title']);
+        }
+
+        // Stelle sicher, dass owner gesetzt ist
+        if (!isset($data['owner']) && kirby()->user()) {
+            $data['owner'] = kirby()->user()->id();
+        }
+
+        return $this->queryDb()->insert($data);
     }
 
     private function updateContent(array $data): bool
@@ -148,7 +159,7 @@ abstract class DatabaseEntityPage extends Kirby\Cms\Page
                 ->count() > 0;
     }
 
-    private function queryDb(): Kirby\Database\Query
+    protected function queryDb(): Kirby\Database\Query
     {
         return Db::table($this->tableName());
     }
@@ -157,5 +168,4 @@ abstract class DatabaseEntityPage extends Kirby\Cms\Page
     {
         return ['id' => $this->uuidNoPrefix()];
     }
-
 }

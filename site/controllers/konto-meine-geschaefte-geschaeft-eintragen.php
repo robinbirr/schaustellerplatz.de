@@ -1,64 +1,153 @@
 <?php
-
 return function ($kirby, $page) {
+    // Nur angemeldete Benutzer dürfen diese Seite aufrufen
+    if (!$kirby->user()) {
+        go('/anmelden');
+    }
 
-    // if the form has been submitted…
-    if ($kirby->request()->is('POST') && get('register')) {
+    $geschaeft = null;
+    $id = get('id');
 
-        // check the honeypot and exit if is has been filled in
-        if(empty(get('website')) === false) {
-            go($page->url());
-            exit;
+    // Wenn eine ID angegeben ist, versuchen wir das Geschäft zu laden
+    if ($id) {
+        $geschaeft = $kirby->site()->find('geschaefte')->children()->filter(function ($p) use ($id) {
+            return $p->uuid()->toString() === $id;
+        })->first();
+
+        // Prüfe, ob der Benutzer das Geschäft bearbeiten darf
+        if ($geschaeft && !$geschaeft->isEditable()) {
+            go('/konto/meine-geschaefte');
         }
+    }
 
-        $data = [
-            'title'    => get('title'),
-        ];
+    $alert = null;
+    $success = false;
 
-        $rules = [
-            'title'  => ['required'],
-        ];
+    // Initialisiere Formularwerte
+    $data = $geschaeft ? [
+        'title' => $geschaeft->title()->value(),
+        'typ' => $geschaeft->typ()->value(),
+        'beschreibung' => $geschaeft->beschreibung()->value(),
+        'front_meters' => $geschaeft->front_meters()->value(),
+        'tiefe_meters' => $geschaeft->tiefe_meters()->value(),
+        'hoehe_meters' => $geschaeft->hoehe_meters()->value(),
+        'stromanschluss' => $geschaeft->stromanschluss()->value(),
+        'wasseranschluss' => $geschaeft->wasseranschluss()->toBool()
+    ] : [];
 
-        $messages = [
-            'title'  => 'Please enter your (link: #name text: name)',
-        ];
-
-        // some of the data is invalid
-        if ($invalid = invalid($data, $rules, $messages)) {
-            $alert = $invalid;
-
+    // Wenn das Formular abgeschickt wurde
+    if ($kirby->request()->is('POST') && get('save')) {
+        // CSRF-Token überprüfen
+        if (!csrf(get('csrf'))) {
+            $alert = [
+                'type' => 'error',
+                'message' => 'Ungültiger CSRF-Token. Bitte versuche es erneut.'
+            ];
         } else {
+            // Formulardaten einlesen
+            $data = [
+                'title' => get('title'),
+                'typ' => get('typ'),
+                'beschreibung' => get('beschreibung'),
+                'front_meters' => (float)get('front_meters'),
+                'tiefe_meters' => (float)get('tiefe_meters'),
+                'hoehe_meters' => (float)get('hoehe_meters'),
+                'stromanschluss' => get('stromanschluss'),
+                'wasseranschluss' => (bool)get('wasseranschluss')
+            ];
 
-            // authenticate as almighty
-            $kirby->impersonate('kirby');
+            // Validierung
+            $rules = [
+                'title' => ['required', 'min' => 3, 'max' => 255],
+                'typ' => ['required'],
+                'front_meters' => ['required', 'num'],
+                'tiefe_meters' => ['required', 'num'],
+                'hoehe_meters' => ['required', 'num']
+            ];
 
-            // everything is ok, let's try to create a new registration
-            try {
-                // we store registrations as subpages of the current page
-                $registration = $page->createChild([
-                    'slug'     => md5(str::slug($data['title'] . microtime())),
-                    'template' => 'geschaeft-single',
-                    'content'  => $data
-                ]);
+            $messages = [
+                'title' => 'Bitte gib einen Namen für dein Geschäft ein (3-255 Zeichen).',
+                'typ' => 'Bitte wähle den Typ deines Geschäfts aus.',
+                'front_meters' => 'Bitte gib die Front in Metern ein.',
+                'tiefe_meters' => 'Bitte gib die Tiefe in Metern ein.',
+                'hoehe_meters' => 'Bitte gib die Höhe in Metern ein.'
+            ];
 
-                if ($registration) {
-                    // store referer and name in session
-                    $kirby->session()->set([
-                        'referer' => $page->uri(),
-                        'regName'  => esc($data['title'])
-                    ]);
-                    go('success');
+            // Validiere die Daten
+            if ($invalid = invalid($data, $rules, $messages)) {
+                $alert = [
+                    'type' => 'error',
+                    'message' => 'Das Formular enthält Fehler:',
+                    'details' => $invalid
+                ];
+            } else {
+                try {
+                    // Als Kirby anmelden, um mit Berechtigungen zu arbeiten
+                    $kirby->impersonate('kirby');
+
+                    if ($geschaeft) {
+                        // Bestehendes Geschäft aktualisieren
+                        $geschaeft->update($data);
+                        $success = 'Geschäft erfolgreich aktualisiert!';
+                    } else {
+                        // Neues Geschäft erstellen
+                        $newGeschaeft = $kirby->site()->find('geschaefte')->createChild([
+                            'slug' => Str::slug($data['title']) . '-' . time(),
+                            'template' => 'geschaeft',
+                            'content' => $data
+                        ]);
+
+                        if ($newGeschaeft) {
+                            $success = 'Geschäft erfolgreich erstellt!';
+                            // Redirect zur Übersichtsseite
+                            go('/konto/meine-geschaefte');
+                        } else {
+                            $alert = [
+                                'type' => 'error',
+                                'message' => 'Das Geschäft konnte nicht gespeichert werden.'
+                            ];
+                        }
+                    }
+                } catch (Exception $e) {
+                    $alert = [
+                        'type' => 'error',
+                        'message' => 'Fehler beim Speichern: ' . $e->getMessage()
+                    ];
                 }
-
-            } catch (Exception $e) {
-                $alert = ['Your registration failed: ' . $e->getMessage()];
             }
         }
     }
 
-    // return data to template
+    // Geschäftstypen für das Auswahlfeld
+    $typen = [
+        'Automatenwagen' => 'Automatenwagen',
+        'Fahrgeschäft' => 'Fahrgeschäft',
+        'Spielgeschäft' => 'Spielgeschäft',
+        'Imbiss' => 'Imbiss',
+        'Schießwagen' => 'Schießwagen',
+        'Süßwarenstand' => 'Süßwarenstand',
+        'Getränkestand' => 'Getränkestand',
+        'Laufgeschäft' => 'Laufgeschäft',
+        'Warenverkaufsstand' => 'Warenverkaufsstand',
+        'Anderes' => 'Anderes'
+    ];
+
+    // Stromanschlüsse für das Auswahlfeld
+    $stromanschluesse = [
+        '230V' => '230V (Haushaltssteckdose)',
+        '400V-16A' => '400V / 16A (CEE)',
+        '400V-32A' => '400V / 32A (CEE)',
+        '400V-63A' => '400V / 63A (CEE)',
+        '400V-125A' => '400V / 125A (CEE)',
+        'Keiner' => 'Kein Stromanschluss benötigt'
+    ];
+
     return [
-        'alert' => $alert ?? null,
-        'data'  => $data ?? false,
+        'geschaeft' => $geschaeft,
+        'data' => $data,
+        'alert' => $alert,
+        'success' => $success,
+        'typen' => $typen,
+        'stromanschluesse' => $stromanschluesse
     ];
 };

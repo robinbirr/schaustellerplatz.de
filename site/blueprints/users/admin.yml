@@ -1,0 +1,58 @@
+title: Administrator
+permissions:
+  access:
+    panel: true
+    users: true
+    site: true
+  site:
+    update: true
+  pages:
+    create: true
+    delete: true
+    publish: true
+    update: true
+  users:
+    create: true
+    delete: true
+    update: true
+
+columns:
+  - width: 1/2
+    fields:
+      vorname:
+        label: Vorname
+        type: text
+        width: 1/2
+      nachname:
+        label: Nachname
+        type: text
+        width: 1/2
+      strasse:
+        label: Straße
+        type: text
+      plz:
+        label: PLZ
+        type: text
+        width: 1/4
+      stadt:
+        label: Ort/Stadt
+        type: text
+        width: 3/4
+      country:
+        label: Land
+        type: text
+
+  - width: 1/2
+    fields:
+      website:
+        label: Website
+        type: url
+      email_notifications:
+        label: E-Mail-Benachrichtigungen
+        type: toggles
+        default: all
+        options:
+          all: Alle Benachrichtigungen
+          new_users: Neue Benutzer
+          new_listings: Neue Geschäfte/Anzeigen
+          payments: Zahlungsbenachrichtigungen
