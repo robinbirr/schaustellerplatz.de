@@ -39,7 +39,7 @@
             <?php endif ?>
 
             <div class="rounded-3 bg-white p-3 p-md-4 p-xxl-5 dev-dashed">
-              <form method="POST" action="<?= $page->url() ?>">
+              <form method="POST" action="<?= $page->url() ?>" enctype="multipart/form-data">
                 <input type="hidden" name="csrf" value="<?= csrf() ?>">
                 <?php if($geschaeft): ?>
                   <input type="hidden" name="id" value="<?= $geschaeft->uuid()->toString() ?>">
@@ -103,6 +103,57 @@
                   </div>
                 </div>
 
+                <!-- Bild-Upload Bereich -->
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Bilder hochladen (max. <?= $maxBilder ?> Bilder)</label>
+                  <div class="image-upload-container">
+                    <div class="row">
+                      <!-- Vorhandene Bilder anzeigen (falls vorhanden) -->
+                      <?php if(!empty($bilder)): ?>
+                        <?php foreach($bilder as $index => $bild): ?>
+                          <div class="col-md-4 mb-3 image-preview-container" data-index="<?= $index ?>">
+                            <div class="card h-100">
+                              <img src="<?= $bild['url'] ?>" class="card-img-top" alt="Vorschau">
+                              <div class="card-body text-center">
+                                <button type="button" class="btn btn-danger btn-sm remove-image" data-index="<?= $index ?>">
+                                  <i class="bi bi-trash"></i> Entfernen
+                                </button>
+                                <input type="hidden" name="existing_images[]" value="<?= $bild['id'] ?>">
+                              </div>
+                            </div>
+                          </div>
+                        <?php endforeach ?>
+                      <?php endif ?>
+
+                      <!-- Neue Bilder hochladen -->
+                      <?php $remainingSlots = $maxBilder - count($bilder); ?>
+                      <?php if($remainingSlots > 0): ?>
+                        <div class="col-md-4 mb-3">
+                          <div class="card h-100 image-upload-card">
+                            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                              <div class="mb-3 text-center">
+                                <i class="bi bi-cloud-arrow-up fs-1"></i>
+                                <p class="mb-0">Bild auswählen</p>
+                              </div>
+                              <input type="file" name="images[]" class="image-upload-input" accept="image/jpeg,image/png,image/gif" style="display: none;">
+                              <button type="button" class="btn btn-primary btn-sm select-image">
+                                <i class="bi bi-image"></i> Durchsuchen
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      <?php endif ?>
+                    </div>
+
+                    <div class="small text-muted mt-2">
+                      Erlaubte Dateiformate: JPG, PNG, GIF. Maximale Dateigröße: 5MB.
+                      <?php if($kirby->user()->role()->name() === 'free'): ?>
+                        <br>Als Free-Benutzer kannst du bis zu 3 Bilder hochladen. <a href="/konto/mein-paket" class="text-primary">Upgrade auf Premium</a> für bis zu 6 Bilder.
+                      <?php endif ?>
+                    </div>
+                  </div>
+                </div>
+
                 <?php if($kirby->user()->role()->name() === 'premium'): ?>
                   <div class="mb-4">
                     <label for="youtube_video_id" class="form-label fw-bold">YouTube-Video (nur Premium)</label>
@@ -114,19 +165,6 @@
                   </div>
                 <?php endif ?>
 
-                <div class="mb-4">
-                  <div class="callout callout-info bg-light p-3">
-                    <h6 class="fw-bold"><i class="bi bi-info-circle me-2"></i>Bilder hochladen</h6>
-                    <p class="mb-0">Nach dem Speichern deines Geschäfts kannst du Bilder hochladen.
-                      <?php if($kirby->user()->role()->name() === 'free'): ?>
-                        Als Free-Benutzer kannst du bis zu 3 Bilder hochladen.
-                      <?php else: ?>
-                        Als Premium-Benutzer kannst du bis zu 6 Bilder hochladen.
-                      <?php endif ?>
-                    </p>
-                  </div>
-                </div>
-
                 <div class="d-flex gap-2">
                   <button type="submit" name="save" value="1" class="btn btn-primary">
                     <i class="bi bi-save me-2"></i>Speichern
@@ -135,12 +173,121 @@
                 </div>
               </form>
             </div>
-
           </div>
         </div>
         <!-- Main content END -->
-
       </div>
     </div>
   </section>
+
+  <!-- JavaScript für Bild-Upload -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Selektoren für Bild-Upload-Funktionalität
+      const container = document.querySelector('.image-upload-container');
+      const imageRow = container.querySelector('.row');
+
+      // Bild-Auswahl-Buttons
+      container.addEventListener('click', function(e) {
+        if (e.target.classList.contains('select-image') || e.target.closest('.select-image')) {
+          const card = e.target.closest('.image-upload-card');
+          const input = card.querySelector('.image-upload-input');
+          input.click();
+        }
+
+        // Entfernen-Buttons für vorhandene Bilder
+        if (e.target.classList.contains('remove-image') || e.target.closest('.remove-image')) {
+          const previewContainer = e.target.closest('.image-preview-container');
+          previewContainer.remove();
+
+          // Neuen Upload-Slot hinzufügen, wenn unter dem Maximum
+          const currentImages = document.querySelectorAll('.image-preview-container').length;
+          const uploadCards = document.querySelectorAll('.image-upload-card').length;
+
+          if (currentImages + uploadCards < <?= $maxBilder ?>) {
+            addUploadCard();
+          }
+        }
+      });
+
+      // Datei-Upload verarbeiten
+      container.addEventListener('change', function(e) {
+        if (e.target.classList.contains('image-upload-input')) {
+          const file = e.target.files[0];
+
+          if (file) {
+            const reader = new FileReader();
+            const card = e.target.closest('.image-upload-card');
+
+            reader.onload = function(e) {
+              // Vorschau-Container erstellen
+              const previewContainer = document.createElement('div');
+              previewContainer.className = 'col-md-4 mb-3 image-preview-container';
+
+              // Vorschau-Card erstellen
+              previewContainer.innerHTML = `
+                <div class="card h-100">
+                  <img src="${e.target.result}" class="card-img-top" alt="Vorschau">
+                  <div class="card-body text-center">
+                    <button type="button" class="btn btn-danger btn-sm remove-image">
+                      <i class="bi bi-trash"></i> Entfernen
+                    </button>
+                  </div>
+                </div>
+              `;
+
+              // Datei-Input in Vorschau-Container verschieben
+              const input = card.querySelector('.image-upload-input');
+              previewContainer.appendChild(input);
+
+              // Vorschau einfügen vor Upload-Card
+              imageRow.insertBefore(previewContainer, card);
+
+              // Upload-Card entfernen, wenn maximale Anzahl erreicht
+              const currentImages = document.querySelectorAll('.image-preview-container').length;
+              const maxImages = <?= $maxBilder ?>;
+
+              if (currentImages >= maxImages) {
+                card.remove();
+              } else {
+                // Ansonsten Input zurücksetzen für nächsten Upload
+                const newInput = document.createElement('input');
+                newInput.type = 'file';
+                newInput.name = 'images[]';
+                newInput.className = 'image-upload-input';
+                newInput.accept = 'image/jpeg,image/png,image/gif';
+                newInput.style.display = 'none';
+
+                card.querySelector('.card-body').appendChild(newInput);
+              }
+            };
+
+            reader.readAsDataURL(file);
+          }
+        }
+      });
+
+      // Funktion zum Hinzufügen einer Upload-Card
+      function addUploadCard() {
+        const uploadCard = document.createElement('div');
+        uploadCard.className = 'col-md-4 mb-3';
+        uploadCard.innerHTML = `
+          <div class="card h-100 image-upload-card">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+              <div class="mb-3 text-center">
+                <i class="bi bi-cloud-arrow-up fs-1"></i>
+                <p class="mb-0">Bild auswählen</p>
+              </div>
+              <input type="file" name="images[]" class="image-upload-input" accept="image/jpeg,image/png,image/gif" style="display: none;">
+              <button type="button" class="btn btn-primary btn-sm select-image">
+                <i class="bi bi-image"></i> Durchsuchen
+              </button>
+            </div>
+          </div>
+        `;
+
+        imageRow.appendChild(uploadCard);
+      }
+    });
+  </script>
 <?php snippet('footer') ?>

@@ -1,46 +1,47 @@
 <?php
 
-namespace SchaustellerPlatz;
-
 use Kirby\Database\Db;
+use Kirby\Cms\App as Kirby;
 
 Kirby::plugin('schaustellerplatz/database-init', [
     'hooks' => [
         'system.loadPlugins:after' => function () {
-            $this->initDatabase();
+            // Direkt die initDatabase-Funktion aufrufen, ohne $this zu verwenden
+            initDatabase();
         }
-    ],
-    'methods' => [
-        'initDatabase' => function () {
-            try {
-                // Geschäfte-Tabelle erstellen, falls nicht vorhanden
-                Db::execute("
-                CREATE TABLE IF NOT EXISTS geschaefte (
-                    id VARCHAR(36) PRIMARY KEY,
-                    title VARCHAR(255) NOT NULL,
-                    slug VARCHAR(255) NOT NULL,
-                    owner VARCHAR(100) NOT NULL,
-                    typ VARCHAR(50) NOT NULL,
-                    beschreibung TEXT,
-                    front_meters FLOAT,
-                    tiefe_meters FLOAT,
-                    hoehe_meters FLOAT,
-                    stromanschluss VARCHAR(50),
-                    wasseranschluss BOOLEAN DEFAULT FALSE,
-                    bilder_anzahl INT DEFAULT 0,
-                    youtube_video_id VARCHAR(20),
-                    status VARCHAR(20) DEFAULT 'draft',
-                    creation_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    published_date DATETIME,
-                    last_modified DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    INDEX(owner),
-                    INDEX(status),
-                    INDEX(typ)
-                )
-                ");
+    ]
+]);
 
-                // Kleinanzeigen-Tabelle erstellen, falls nicht vorhanden
-                Db::execute("
+function initDatabase() {
+    try {
+        // Geschäfte-Tabelle erstellen, falls nicht vorhanden
+        Db::execute("
+        CREATE TABLE IF NOT EXISTS geschaefte (
+            id VARCHAR(36) PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            slug VARCHAR(255) NOT NULL,
+            owner VARCHAR(100) NOT NULL,
+            typ VARCHAR(50) NOT NULL,
+            beschreibung TEXT,
+            front_meters FLOAT,
+            tiefe_meters FLOAT,
+            hoehe_meters FLOAT,
+            stromanschluss VARCHAR(50),
+            wasseranschluss BOOLEAN DEFAULT FALSE,
+            bilder_anzahl INT DEFAULT 0,
+            youtube_video_id VARCHAR(20),
+            status VARCHAR(20) DEFAULT 'draft',
+            creation_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+            published_date DATETIME,
+            last_modified DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX(owner),
+            INDEX(status),
+            INDEX(typ)
+        )
+        ");
+
+        // Kleinanzeigen-Tabelle erstellen, falls nicht vorhanden
+        Db::execute("
                 CREATE TABLE IF NOT EXISTS kleinanzeigen (
                     id VARCHAR(36) PRIMARY KEY,
                     title VARCHAR(255) NOT NULL,
@@ -70,8 +71,8 @@ Kirby::plugin('schaustellerplatz/database-init', [
                 )
                 ");
 
-                // Jobangebote-Tabelle erstellen, falls nicht vorhanden
-                Db::execute("
+        // Jobangebote-Tabelle erstellen, falls nicht vorhanden
+        Db::execute("
                 CREATE TABLE IF NOT EXISTS jobangebote (
                     id VARCHAR(36) PRIMARY KEY,
                     title VARCHAR(255) NOT NULL,
@@ -99,8 +100,8 @@ Kirby::plugin('schaustellerplatz/database-init', [
                 )
                 ");
 
-                // Platzangebote-Tabelle erstellen, falls nicht vorhanden
-                Db::execute("
+        // Platzangebote-Tabelle erstellen, falls nicht vorhanden
+        Db::execute("
                 CREATE TABLE IF NOT EXISTS platzangebote (
                     id VARCHAR(36) PRIMARY KEY,
                     veranstaltungsname VARCHAR(255) NOT NULL,
@@ -131,8 +132,8 @@ Kirby::plugin('schaustellerplatz/database-init', [
                 )
                 ");
 
-                // Abonnements-Tabelle erstellen, falls nicht vorhanden
-                Db::execute("
+        // Abonnements-Tabelle erstellen, falls nicht vorhanden
+        Db::execute("
                 CREATE TABLE IF NOT EXISTS abonnements (
                     id VARCHAR(36) PRIMARY KEY,
                     user_id VARCHAR(100) NOT NULL,
@@ -152,8 +153,8 @@ Kirby::plugin('schaustellerplatz/database-init', [
                 )
                 ");
 
-                // Benachrichtigungen-Tabelle erstellen, falls nicht vorhanden
-                Db::execute("
+        // Benachrichtigungen-Tabelle erstellen, falls nicht vorhanden
+        Db::execute("
                 CREATE TABLE IF NOT EXISTS benachrichtigungen (
                     id VARCHAR(36) PRIMARY KEY,
                     user_id VARCHAR(100) NOT NULL,
@@ -165,10 +166,8 @@ Kirby::plugin('schaustellerplatz/database-init', [
                 )
                 ");
 
-            } catch (\Exception $e) {
-                // Log den Fehler, aber lass die Website weiterlaufen
-                error_log('Fehler bei der Initialisierung der Datenbank: ' . $e->getMessage());
-            }
-        }
-    ]
-]);
+    } catch (\Exception $e) {
+        // Log den Fehler, aber lass die Website weiterlaufen
+        error_log('Fehler bei der Initialisierung der Datenbank: ' . $e->getMessage());
+    }
+}
