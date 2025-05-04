@@ -14,10 +14,61 @@ permissions:
     delete: own
     update: own
     publish: false
+tabs:
+  kontoKundendaten:
+    label: Content
+    sections:
+      fields:
+        type: fields
+        fields:
+          vorname:
+            label: Vorname
+            type: text
+            width: 1/2
+  tab2:
+    label: Some fields
+    sections:
+      fields:
+        type: fields
+        fields:
+          text: true
+          tags: true
 
+    columns:
+      kontoFieldsKundendaten:
+        width: 3/3
+        sections:
+          kontoFieldsKundendaten:
+            type: fields
+            fields:
+              vorname:
+                label: Vorname
+                type: text
+                width: 1/2
+              nachname:
+                label: Nachname
+                type: text
+                width: 1/2
+              strasse:
+                label: Straße
+                type: text
+              plz:
+                label: PLZ
+                type: text
+                width: 1/4
+              stadt:
+                label: Ort/Stadt
+                type: text
+                width: 3/4
+              country:
+                label: Land
+                type: text
 columns:
   - width: 1/2
     fields:
+      headingKontaktdaten:
+        label: Kontaktdaten
+        type: headline
       vorname:
         label: Vorname
         type: text
@@ -40,12 +91,15 @@ columns:
       country:
         label: Land
         type: text
-
-  - width: 1/2
-    fields:
       website:
         label: Website
         type: url
+
+  - width: 1/2
+    fields:
+      headingRechnungsadresse:
+        label: Rechnungsadresse
+        type: headline
       umkreis_platzangebote:
         label: Umkreis für Platzangebote
         type: number
@@ -62,8 +116,8 @@ columns:
         type: text
         default: free
         readonly: true
-      account_created:
-        label: Erstellt am
+      registration_date:
+        label: Registriert seit
         type: date
-        default: now
-        readonly: true
+        disabled: true
+

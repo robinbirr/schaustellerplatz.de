@@ -1,5 +1,6 @@
 title: Premium
 home: /konto
+extends: users/free
 permissions:
   access:
     panel: false
@@ -86,3 +87,10 @@ columns:
           monthly: Monatlich
           annual: Jährlich
         default: monthly
+      platzangebote_range:
+        label: Platzangebote Umkreis
+        type: select
+        options:
+          100: 100 km
+          300: 300 km
+        default: 100

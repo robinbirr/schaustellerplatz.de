@@ -8,6 +8,13 @@ return [
         'database' => 'birrwerk_schaustellerplatz',
         'user'     => 'birrwerk_sp_ro',
         'password' => 'GLcSY?cnSCW2dZK#?Ad',
+        'charset'  => 'utf8mb4',
+        'options'  => [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+            PDO::ATTR_EMULATE_PREPARES => false,
+            PDO::ATTR_PERSISTENT => true // Für bessere Performance
+        ]
     ],
     'email' => [
         'transport' => [
@@ -21,7 +28,9 @@ return [
         ]
     ],
     'auth' => [
-        'methods' => ['password', 'code']
+        'methods' => ['password'],
+        'timeout' => 60 * 24, // 24 Stunden Session-Timeout
+        'expire' => 60 * 24 * 14 // 14 Tage Cookie-Laufzeit
     ],
     'routes' => [
         [
@@ -54,7 +63,7 @@ return [
             'pattern' => 'konto/mein-profil/kontaktdaten',
             'action'  => function () {
                 return Page::factory([
-                    'slug' => 'konto/mein-profil/konatktdaten',
+                    'slug' => 'konto/mein-profil/kontaktdaten',
                     'template' => 'konto/mein-profil/konto-mein-profil-kontaktdaten',
                     'model' => 'virtual',
                     'content' => [

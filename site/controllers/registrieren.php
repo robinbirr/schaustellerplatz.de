@@ -3,55 +3,56 @@
 use Kirby\Exception\PermissionException;
 
 return function ($kirby) {
-    // send already logged-in user somewhere else
+    // Wenn bereits eingeloggt, zur Startseite weiterleiten
     if ($kirby->user()) {
-        go('home');
+        go('konto');
     }
 
-    // create empty error list
     $errors = [];
 
-    // the form was sent
+    // Form submission
     if (get('register') && $kirby->request()->is('POST')) {
-        // validate CSRF token
+        // CSRF-Check
         if (csrf(get('csrf')) === true) {
-            // get form data
+            // Formulardaten
             $data = [
                 'email' => get('email'),
                 'name' => get('name'),
                 'password' => get('password'),
             ];
-            // validation rules
+
+            // Validierungsregeln
             $rules = [
                 'email' => ['required', 'email'],
                 'name' => ['required', 'minLength' => 3],
-                'password' => ['required', 'minLength' => 3],
+                'password' => ['required', 'minLength' => 3], // Angepasst wie im ursprünglichen Code
             ];
-            // error messages
+
+            // Fehlermeldungen
             $messages = [
                 'email' => 'Please enter a valid email address',
                 'name' => 'Your name must have at least 3 characters',
                 'password' => 'Your name must have at least 3 characters',
             ];
-            // check if data is valid
+
+            // Daten validieren
             if ($invalid = invalid($data, $rules, $messages)) {
                 $errors = $invalid;
-
-                // the data is fine, let's create a user
             } else {
-                // authenticate
+                // Authentifizierung als Kirby für Benutzererstellung
                 $kirby->impersonate('kirby');
                 try {
-                    // create new user
+                    // Benutzer erstellen
                     $user = $kirby->users()->create([
                         'email' => $data['email'],
-                        'role' => 'free',
+                        'role' => 'free', // Standardrolle für neue Benutzer
                         'language' => 'de',
                         'name' => $data['name'],
                         'password' => $data['password'],
                     ]);
+
                     if (isset($user) === true) {
-                        // create the authentication challenge
+                        // Nach erfolgreicher Registrierung zur Anmeldeseite
                         try {
                             $status = $kirby->auth()->createChallenge($user->email(), false, 'login');
                             go('anmelden');

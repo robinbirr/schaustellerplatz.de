@@ -1,99 +1,153 @@
 <?php snippet('header') ?>
 <?php if (!$kirby->user()) go('/') ?>
 
-<article class="viewDefault">
+  <main class="content-wrapper">
+    <div class="container pt-4 pt-sm-5 pb-5 mb-xxl-3">
+      <div class="row pt-2 pt-sm-0 pt-lg-2 pb-2 pb-sm-3 pb-md-4 pb-lg-5">
+        <?php snippet('konto-menu') ?>
 
-  <?php dump(get('email')) ?>
+        <!-- Main content START -->
+        <div class="col-lg-9">
+          <h1 class="h2 pb-2 pb-lg-3">Kontaktdaten</h1>
 
-  <div class="viewUserData" id="userData">
+          <?php if($success): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              Deine Kontaktdaten wurden erfolgreich aktualisiert.
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <?php endif ?>
 
-    <div id="name"><?= $page->username() ?>: <?= $kirby->user()->username() ?></div>
-    <div id="email"><?= $page->email() ?>: <?= $kirby->user()->email() ?></div>
-  </div>
+          <?php if($error): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <?= $error ?>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <?php endif ?>
 
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <form method="post" action="<?= $page->url() ?>">
+                <input type="hidden" name="csrf" value="<?= csrf() ?>">
 
+                <div class="row g-4">
+                  <!-- Persönliche Daten -->
+                  <div class="col-12">
+                    <h5 class="mb-3">Persönliche Daten</h5>
+                  </div>
 
-  <form id="editUserData" class="editUserForm" method="post">
+                  <div class="col-sm-6">
+                    <label for="vorname" class="form-label">Vorname *</label>
+                    <input type="text" class="form-control" id="vorname" name="vorname"
+                           value="<?= $user->vorname()->or($data['vorname'] ?? '') ?>" required>
+                  </div>
 
-    <div>
-      <label for="editEmail"><?= $page->username()->html() ?></label>
-      <input type="email" id="editEmail" name="editEmail" placeholder="<?= $kirby->user()->email() ?>" value="<?= get('editEmail') ? esc(get('editEmail'), 'attr') : '' ?>">
-    </div>
+                  <div class="col-sm-6">
+                    <label for="nachname" class="form-label">Nachname *</label>
+                    <input type="text" class="form-control" id="nachname" name="nachname"
+                           value="<?= $user->nachname()->or($data['nachname'] ?? '') ?>" required>
+                  </div>
 
-    <div>
-      <label for="editPassword"><?= $page->password()->html() ?></label>
-      <input type="password" id="editPassword" name="editPassword" value="<?= get('editPassword') ? esc(get('editPassword'), 'attr') : '' ?>">
-    </div>
+                  <!-- Adresse -->
+                  <div class="col-12">
+                    <hr class="my-4">
+                    <h5 class="mb-3">Adresse</h5>
+                  </div>
 
-    <div>
-      <label for="editTel"><?= $page->tel()->html() ?></label>
-      <input type="text" id="editTel" placeholder="<?= $kirby->user()->content()->tel() ?>" name="editTel" value="<?= get('editTel') ? esc(get('editTel'), 'attr') : '' ?>">
-    </div>
+                  <div class="col-12">
+                    <label for="strasse" class="form-label">Straße und Hausnummer</label>
+                    <input type="text" class="form-control" id="strasse" name="strasse"
+                           value="<?= $user->strasse()->or($data['strasse'] ?? '') ?>">
+                  </div>
 
-    <div>
-      <input type="submit" name="user" value="senden" onsubmit="">
-    </div>
+                  <div class="col-md-4">
+                    <label for="plz" class="form-label">PLZ</label>
+                    <input type="text" class="form-control" id="plz" name="plz"
+                           value="<?= $user->plz()->or($data['plz'] ?? '') ?>">
+                  </div>
 
-  </form>
-</article>
+                  <div class="col-md-8">
+                    <label for="stadt" class="form-label">Stadt</label>
+                    <input type="text" class="form-control" id="stadt" name="stadt"
+                           value="<?= $user->stadt()->or($data['stadt'] ?? '') ?>">
+                  </div>
 
-<section class="bg-light pt-3">
-  <div class="container">
-    <div class="row">
-      <?php snippet('konto-menu') ?>
-      <!-- Main content START -->
-      <div class="col-lg-8 col-xl-9">
+                  <div class="col-12">
+                    <label for="land" class="form-label">Land</label>
+                    <select class="form-select" id="land" name="land">
+                      <option value="">Bitte wählen...</option>
+                      <option value="DE" <?= ($user->land() ?? '') == 'DE' ? 'selected' : '' ?>>Deutschland</option>
+                      <option value="AT" <?= ($user->land() ?? '') == 'AT' ? 'selected' : '' ?>>Österreich</option>
+                      <option value="CH" <?= ($user->land() ?? '') == 'CH' ? 'selected' : '' ?>>Schweiz</option>
+                    </select>
+                  </div>
 
-        <!-- Offcanvas menu button -->
-        <div class="d-grid mb-0 d-lg-none w-100">
-          <button class="btn btn-primary mb-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
-            <i class="fas fa-sliders-h"></i> Menu
-          </button>
-        </div>
+                  <!-- Kontaktinformationen -->
+                  <div class="col-12">
+                    <hr class="my-4">
+                    <h5 class="mb-3">Kontaktinformationen</h5>
+                  </div>
 
-        <div class="vstack gap-4">
-          <h3 class="card-header-title"><?= $page->title() ?></h3>
-          <div><a href="/konto/mein-profil"><i class="bi bi-arrow-left"></i> zurück</a></div>
+                  <div class="col-md-6">
+                    <label for="email" class="form-label">E-Mail-Adresse *</label>
+                    <input type="email" class="form-control" id="email" name="email"
+                           value="<?= $user->email() ?>" required>
+                  </div>
 
-          <div class=" rounded-3 bg-white  p-3 p-md-4 p-xxl-5 dev-dashed  ">
-            <div class="row g-4 g-xl-5">
-              <div class="col-6 col-lg-4 col-xl-3 text-center">
-                <div><a href="/mein-konto/profilbild" class="h2 mb-2 text-decoration-none"><i class="bi bi-person"></i></a></div>
-                <div class="pt-1 dev-dashed"></div>					<div><a href="/mein-konto/profilbild" class="text-decoration-none">Profilbild</a></div>
-              </div>
-              <div class="col-6 col-lg-4 col-xl-3 text-center">
-                <div><a href="/mein-konto/kontaktdaten" class="h2 mb-2 text-decoration-none"><i class="bi bi-house-door"></i></a></div>
-                <div class="pt-1 dev-dashed"></div>					<div><a href="/mein-konto/kontaktdaten" class="text-decoration-none">Kontaktdaten</a></div>
-              </div>
-              <div class="col-6 col-lg-4 col-xl-3 text-center">
-                <div><a href="/mein-konto/links" class="h2 mb-2 text-decoration-none"><i class="bi bi-box-arrow-up-right"></i></a></div>
-                <div class="pt-1 dev-dashed"></div>					<div><a href="/mein-konto/links" class="text-decoration-none">Homepage &amp; Links</a></div>
-              </div>
-              <div class="col-6 col-lg-4 col-xl-3 text-center">
-                <div><a href="/mein-konto/interview" class="h2 mb-2 text-decoration-none"><i class="bi bi-chat-square-text"></i></a></div>
-                <div class="pt-1 dev-dashed"></div>					<div><a href="/mein-konto/interview" class="text-decoration-none">Interview</a></div>
-              </div>
-              <div class="col-6 col-lg-4 col-xl-3 text-center">
-                <div><a href="/mein-konto/texte" class="h2 mb-2 text-decoration-none"><i class="bi bi-text-left"></i></a></div>
-                <div class="pt-1 dev-dashed"></div>					<div><a href="/mein-konto/texte" class="text-decoration-none">Texte</a></div>
-              </div>
-              <div class="col-6 col-lg-4 col-xl-3 text-center">
-                <div><a href="/mein-konto/farben" class="h2 mb-2 text-decoration-none"><i class="bi bi-droplet"></i></a></div>
-                <div class="pt-1 dev-dashed"></div>					<div><a href="/mein-konto/farben" class="text-decoration-none">Farbthema</a></div>
-              </div>
+                  <div class="col-md-6">
+                    <label for="telefon" class="form-label">Telefon</label>
+                    <input type="tel" class="form-control" id="telefon" name="telefon"
+                           value="<?= $user->telefon()->or($data['telefon'] ?? '') ?>">
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="website" class="form-label">Website</label>
+                    <input type="url" class="form-control" id="website" name="website"
+                           value="<?= $user->website()->or($data['website'] ?? '') ?>"
+                           placeholder="https://www.example.com">
+                  </div>
+
+                  <!-- Schausteller-spezifische Informationen -->
+                  <div class="col-12">
+                    <hr class="my-4">
+                    <h5 class="mb-3">Schausteller-Informationen</h5>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="firmenname" class="form-label">Firmenname</label>
+                    <input type="text" class="form-control" id="firmenname" name="firmenname"
+                           value="<?= $user->firmenname()->or($data['firmenname'] ?? '') ?>">
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="ustid" class="form-label">USt-IdNr.</label>
+                    <input type="text" class="form-control" id="ustid" name="ustid"
+                           value="<?= $user->ustid()->or($data['ustid'] ?? '') ?>">
+                  </div>
+
+                  <div class="col-12">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter"
+                        <?= $user->newsletter()->toBool() ? 'checked' : '' ?>>
+                      <label class="form-check-label" for="newsletter">
+                        Ich möchte den Newsletter mit Informationen zu neuen Platzangeboten erhalten
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-flex gap-3">
+                  <button type="submit" class="btn btn-primary">Änderungen speichern</button>
+                  <a href="/konto/mein-profil" class="btn btn-outline-secondary">Zurück</a>
+                </div>
+              </form>
             </div>
           </div>
-
-
-          <!-- Personal info START -->
-
         </div>
+        <!-- Main content END -->
       </div>
-      <!-- Main content END -->
-
     </div>
-  </div>
-</section>
-<!-- =======================
-Content END -->
+  </main>
+
 <?php snippet('footer') ?>

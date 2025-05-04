@@ -3,13 +3,13 @@
   <div class="container h-100 d-flex px-0 px-sm-4">
     <div class="row justify-content-center align-items-center m-auto">
       <?php
-      // if the form has errors, show a list of messages
+      // Fehlermeldungen anzeigen
       if (count($errors) > 0) : ?>
         <div class="alert alert-danger d-flex align-items-center rounded-3 mb-0" role="alert">
           <h4 class="mb-0 alert-heading"><i class="bi bi-exclamation-octagon-fill me-2"></i> </h4>
           <div class="ms-3">
             <?php foreach ($errors as $message) : ?>
-            <h6 class="mb-0 alert-heading"><?= kirbytext($message) ?></h6>
+              <h6 class="mb-0 alert-heading"><?= kirbytext($message) ?></h6>
             <?php endforeach ?>
           </div>
         </div>
